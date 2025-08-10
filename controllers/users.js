@@ -4,7 +4,7 @@ const express = require('express');
 
 const router = express.Router();
 const User = require('../models/user');
-const verifyToken = require("../middleware/verify-token")
+const verifyToken = require('../middleware/verify-token')
 
 router.get('/currentUser', async (req, res) => {
   try {
