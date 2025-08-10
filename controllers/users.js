@@ -39,4 +39,10 @@ router.get('/:userId', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/:userId/favorite', verifyToken, async (req, res) => {
+  if(req.user._id !== req.params.userId) {
+    return res.status(402).json({ err: 'Unauthorized' })
+  }
+})
+
 module.exports = router;
