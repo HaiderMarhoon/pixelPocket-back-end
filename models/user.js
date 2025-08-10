@@ -6,11 +6,17 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+    },
     hashedPassword: {
       type: String,
       required: true,
     },
-    favorite:[gamesSchema],
+    favorite:{
+      type: mongoose.Schema.Types.ObjectId , ref:'games'
+    },
     age:{
       type : Number
     }
