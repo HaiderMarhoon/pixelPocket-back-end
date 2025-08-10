@@ -10,7 +10,7 @@ const saltRounds = 12;
 
 router.post('/sign-up', async (req, res) => {
   try {
-    const { username, email, password, age} = req.body;
+    const { username, email, password, age } = req.body;
 
     const existingUser = await User.findOne({ username });
 
@@ -19,13 +19,13 @@ router.post('/sign-up', async (req, res) => {
     }
 
     const hashedPassword = bcrypt.hashSync(password, saltRounds);
-    const newUser = await User.create({ username, hashedPassword, email, age });
+    const newUser = await User.create({ username, email, hashedPassword, age });
 
     const payload = {
       username: newUser.username,
       _id: newUser._id,
-      email: newUser.email,
-      age: newUser.age
+       email: newUser.email,
+      age: newUser.age,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET);
@@ -54,7 +54,6 @@ router.post('/sign-in', async (req, res, next) => {
       username: user.username,
       _id: user._id,
       email: newUser.email,
-      age: newUser.age
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET);
