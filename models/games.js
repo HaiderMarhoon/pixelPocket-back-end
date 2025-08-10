@@ -6,12 +6,33 @@ const gamesSchema = mongoose.Schema({
         type: String,
         required : true
     },
-
-
-
+    author:{
+        type: mongoose.Schema.Types.ObjectId, ref:"User"
+    },
+    category:{
+        type:String,
+        enum:['action', 'sport', 'Fighting','Horror' ,'Puzzle' ,'MMO' ],
+        required : true
+    },
+    body:{
+        type: String,
+        required : true
+    },
+    ageRate:{
+        type: Number,
+        required : true
+    },
+    image:{
+        type:String,
+        required : true
+    },
+    gameLink:{
+        type: String,
+        required : true
+    },
 },{
     timestamp:true
 })
 
 const Games = mongoose.model("games" ,gamesSchema )
-module.exports=Games
+module.exports = Games
