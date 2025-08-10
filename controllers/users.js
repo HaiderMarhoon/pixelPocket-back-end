@@ -39,9 +39,23 @@ router.get('/:userId', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/:userId/favorite', verifyToken, async (req, res) => {
+router.get('/:userId/favorites', verifyToken, async (req, res) => {
+  if(req.user._id !== req.params.userId){
+    return res.status(402).json({ err: 'Unauthorized'})
+  }
+  const user = await User.findById(req.params.userId).populate('favorites');
+  res.json({ favorites: user.favorites })
+})
+
+
+router.post('/:userId/favorites', verifyToken , async (req, res) => {
   if(req.user._id !== req.params.userId) {
-    return res.status(402).json({ err: 'Unauthorized' })
+    return res.status(403).json({ err: 'Unauthorized' })
+  }
+  const user = await User.findById(req.params.userId);
+  if(!user.favorites.includes(req.params.gameId)){
+    user.favorites.push(req.params.gameId)
+    await user.save();
   }
 })
 
