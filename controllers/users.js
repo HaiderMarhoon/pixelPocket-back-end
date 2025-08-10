@@ -30,7 +30,7 @@ router.get('/:userId', verifyToken, async (req, res) => {
     const user = await User.findById(req.params.userId);
 
     if (!user) {
-      return res.status(404).json({ err: 'User not found.' });
+      return res.status(405).json({ err: 'User not found.' });
     }
 
     res.json({ user });
@@ -40,12 +40,19 @@ router.get('/:userId', verifyToken, async (req, res) => {
 });
 
 router.get('/:userId/favorites', verifyToken, async (req, res) => {
-  if(req.user._id !== req.params.userId){
-    return res.status(402).json({ err: 'Unauthorized'})
+  try {
+    if (req.user._id !== req.params.userId) {
+      return res.status(403).json({ err: 'Unauthorized' });
+    }
+    const user = await User.findById(req.params.userId).populate('favorites');
+    if (!user) {
+      return res.status(404).json({ err: 'User not found.' });
+    }
+    res.json({ favorite: user.favorite });
+  } catch (err) {
+    res.status(500).json({ err: err.message });
   }
-  const user = await User.findById(req.params.userId).populate('favorites');
-  res.json({ favorites: user.favorites })
-})
+});
 
 
 router.post('/:userId/favorites', verifyToken , async (req, res) => {
@@ -53,8 +60,8 @@ router.post('/:userId/favorites', verifyToken , async (req, res) => {
     return res.status(403).json({ err: 'Unauthorized' })
   }
   const user = await User.findById(req.params.userId);
-  if(!user.favorites.includes(req.params.gameId)){
-    user.favorites.push(req.params.gameId)
+  if(!user.favorite.includes(req.params.gameId)){
+    user.favorite.push(req.params.gameId)
     await user.save();
   }
 })
