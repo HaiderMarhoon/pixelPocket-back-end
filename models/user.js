@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    favorite:[gamesSchema]
+    favorite:[gamesSchema],
+    age:{
+      type : Number
+    }
   },
   {
     timestamps: true,
