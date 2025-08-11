@@ -41,7 +41,7 @@ const gamesSchema = mongoose.Schema({
         type: String,
         required : true
     },
-    comments:[commentsSchema]
+    comment:[commentsSchema]
 },{
     timestamp:true
 })
