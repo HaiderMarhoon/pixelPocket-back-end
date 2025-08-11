@@ -30,6 +30,9 @@ const gamesSchema = mongoose.Schema({
         type: String,
         required : true
     },
+    comments:{
+        type: mongoose.Schema.Types.ObjectId, ref:"Comment"
+    }
 },{
     timestamp:true
 })

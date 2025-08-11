@@ -15,7 +15,7 @@ router.get("/" , async(req,res) =>{
         res.status(500).send(err)
     }
 })
-router.get("/:gamesId" , async(req,res)=>{
+router.get("/:gameId" , async(req,res)=>{
     try{
         const games =await Games.findById().populate('author')
     }catch(err){
@@ -39,16 +39,16 @@ router.post('/', async(req,res)=>{
     }
 })
 
-router.put('/:gamesId', async(req,res) =>{
+router.put('/:gameId', async(req,res) =>{
     try{
-        const game = await Games.findById(req.params.gamesId)
+        const game = await Games.findById(req.params.gameId)
 
         if(!game.author.equals(req.user._id)){
             res.status(404).send("You can not modify anythings")
         }
 
         const updateGame = await Games.findByIdAndUpdate(
-            req.params.gamesId,
+            req.params.gameId,
             req.body,
             { new: true}
         )
@@ -62,15 +62,15 @@ router.put('/:gamesId', async(req,res) =>{
 })
 
 
-router.delete("/:gamesId" , async(req,res) =>{
+router.delete("/:gameId" , async(req,res) =>{
     try{
-        const game = await Games.findById(req.params.gamesId)
+        const game = await Games.findById(req.params.gameId)
 
         if(!game.author.equals(req.user._id)){
             res.status(404).send("You can not delete game")
         }
 
-        const deleteGame = await Games.findByIdAndDelete(req.params.gamesId)
+        const deleteGame = await Games.findByIdAndDelete(req.params.gameId)
         res.status(201).json(deleteGame)
     }
     catch(err){
@@ -80,7 +80,24 @@ router.delete("/:gamesId" , async(req,res) =>{
 
 
 // comments
+router.post('/:gameId/comments', async (req, res) => {
+	try {
+		req.body.author = req.user._id
+		const games = await Games.findById(req.params.hootId)
+		games.comments.push(req.body)
+		await games.save()
 
+		// Find the newly created comment:
+		const newGameComment = games.comments[games.comments.length - 1]
+
+		newGameComment._doc.author = req.user
+
+		// Respond with the newGameComment:
+		res.status(201).json(newGameComment)
+	} catch (error) {
+		res.status(500).json(error)
+	}
+})
 
 
 module.exports = router
