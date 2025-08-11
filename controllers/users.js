@@ -42,7 +42,7 @@ router.get('/:userId/favorites', verifyToken, async (req, res) => {
     return res.status(402).json({ err: 'Unauthorized'})
   }
   const user = await User.findById(req.params.userId).populate('favorites');
-  res.json({ favorites: user.favorites })
+  res.json({ favorite: user.favorite })
 })
 
 
@@ -51,8 +51,8 @@ router.post('/:userId/favorites', verifyToken , async (req, res) => {
     return res.status(403).json({ err: 'Unauthorized' })
   }
   const user = await User.findById(req.params.userId);
-  if(!user.favorites.includes(req.params.gameId)){
-    user.favorites.push(req.params.gameId)
+  if(!user.favorite.includes(req.params.gameId)){
+    user.favorite.push(req.params.gameId)
     await user.save();
   }
 })
