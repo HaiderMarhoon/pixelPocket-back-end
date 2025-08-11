@@ -12,8 +12,8 @@ router.post('/sign-up', async (req, res) => {
   try {
     const { username, email, password, age } = req.body;
 
-    const existingUser = await User.findOne({ username });
-
+    const existingUser = await User.findOne({
+      $or:[{username}, {email}]  });
     if (existingUser) {
       return res.status(409).json({ err: 'Username or Password is invalid' });
     }
@@ -38,7 +38,18 @@ router.post('/sign-up', async (req, res) => {
 
 router.post('/sign-in', async (req, res, next) => {
   try {
-    const user = await User.findOne({ username: req.body.username });
+    const { identifier, password } = req.body; 
+    if (!identifier || !password) {
+      return res.status(400).json({ err: 'Identifier and password are required' });
+    }
+
+    const user = await User.findOne({
+      $or: [
+        { username: identifier },
+        { email: identifier }
+      ]
+    });
+
     if (!user) {
       return res.status(401).json({ err: 'Invalid credentials.' });
     }
@@ -54,6 +65,7 @@ router.post('/sign-in', async (req, res, next) => {
       username: user.username,
       _id: user._id,
       email: user.email,
+      age: user.age,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET);
