@@ -1,7 +1,5 @@
 // controllers/users.js
-
 const express = require('express');
-
 const router = express.Router();
 const User = require('../models/user');
 const verifyToken = require('../middleware/verify-token')
@@ -53,7 +51,11 @@ router.get('/:userId/favorite', verifyToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
-});
+  const user = await User.findById(req.params.userId).populate('favorites');
+  res.json({ favorite: user.favorite })
+})
+
+
 
 // POST
 router.post('/:userId/favorite', verifyToken , async (req, res) => {
