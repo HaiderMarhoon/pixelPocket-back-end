@@ -19,6 +19,7 @@ router.get("/" , async(req,res) =>{
 router.get("/:gameId" , async(req,res)=>{
     try{
         const games =await Games.findById(req.params.gameId)
+        res.status(200).json(games);
     }catch(err){
         res.status(500).send(err)
     }
