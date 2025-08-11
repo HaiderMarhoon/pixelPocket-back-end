@@ -53,7 +53,7 @@ router.post('/sign-in', async (req, res, next) => {
     const payload = {
       username: user.username,
       _id: user._id,
-      email: newUser.email,
+      email: user.email,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET);
