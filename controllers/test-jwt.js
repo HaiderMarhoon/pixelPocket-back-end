@@ -8,6 +8,7 @@ router.get('/sign-token', (req, res) => {
   const user = {
     _id: 1,
     username: 'test',
+    email: 'test',
     password: 'test',
     hahahahaha: 'not secure',
   };
