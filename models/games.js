@@ -1,5 +1,16 @@
 const mongoose = require ("mongoose")
 
+const commentsSchema =mongoose.Schema ({
+    comment:{
+        type: String,
+    },
+    author:{
+        type: mongoose.Schema.Types.ObjectId , ref:"User"
+    },
+},{
+    timestamps:true,
+})
+
 const gamesSchema = mongoose.Schema({
 
     title : {
@@ -30,9 +41,7 @@ const gamesSchema = mongoose.Schema({
         type: String,
         required : true
     },
-    comments:{
-        type: mongoose.Schema.Types.ObjectId, ref:"Comment"
-    }
+    comments:[commentsSchema]
 },{
     timestamp:true
 })
