@@ -18,8 +18,11 @@ router.get("/" , async(req,res) =>{
 
 router.get("/:gameId" , async(req,res)=>{
     try{
-        const games =await Games.findById(req.params.gameId)
-        res.status(200).json(games);
+        const game = await Games.findById(req.params.gameId).populate('author').populate({
+            path: 'comment.author',
+            model: 'User'
+        });
+        res.status(200).json(game);
     }catch(err){
         res.status(500).send(err)
     }
@@ -43,63 +46,115 @@ router.post('/', async(req,res)=>{
 
 router.put('/:gameId', async(req,res) =>{
     try{
-        const game = await Games.findById(req.params.gameId)
+        const game = await Games.findById(req.params.gameId);
 
-        if(!game.author.equals(req.user._id)){
-            res.status(404).send("You can not modify anythings")
+        if (!game) {
+            return res.status(404).send("Game not found");
         }
 
-        const updateGame = await Games.findByIdAndUpdate(
+        if (!game.author.equals(req.user._id)) {
+            return res.status(403).send("You cannot modify this game");
+        }
+
+        const updatedGame = await Games.findByIdAndUpdate(
             req.params.gameId,
             req.body,
-            { new: true}
-        )
+            { new: true }
+        );
 
-        updateGame._doc.author =req.user
-        res.status(201).json(updateGame)
+        updatedGame._doc.author = req.user;
+        res.status(200).json(updatedGame);
     }
     catch(err){
-        res.status(500).send(err)
+        res.status(500).send(err);
     }
-})
-
+});
 
 router.delete("/:gameId" , async(req,res) =>{
     try{
-        const game = await Games.findById(req.params.gameId)
+        const game = await Games.findById(req.params.gameId);
 
-        if(!game.author.equals(req.user._id)){
-            res.status(404).send("You can not delete game")
+        if (!game) {
+            return res.status(404).send("Game not found");
         }
 
-        const deleteGame = await Games.findByIdAndDelete(req.params.gameId)
-        res.status(201).json(deleteGame)
+        if (!game.author.equals(req.user._id)) {
+            return res.status(403).send("You cannot delete this game");
+        }
+
+        await game.remove(); // or use findByIdAndDelete
+        res.status(204).send(); // No content to send back
     }
     catch(err){
-        res.status(500).send(err)
+        res.status(500).send(err);
     }
-})
+});
 
 
 // comments
 router.post('/:gameId/comments', async (req, res) => {
-	try {
-		req.body.author = req.user._id
-		const games = await Games.findById(req.params.gameId)
-		games.comment.push(req.body)
-		await games.save()
+    try {
+        req.body.author = req.user._id;
+        const game = await Games.findById(req.params.gameId);
+        
+        if (!game) {
+            return res.status(404).send("Game not found");
+        }
 
-		// Find the newly created comment:
-		const newGameComment = games.comment[games.comment.length - 1]
+        game.comment.push(req.body);
+        await game.save();
+        const newGameComment = game.comment[game.comment.length - 1];
+        newGameComment._doc.author = req.user; 
+        
+        res.status(201).json(newGameComment);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
 
-		newGameComment._doc.author = req.user
+router.put('/:gameId/comments/:commentId', async (req, res) => {
+    try {
+        const game = await Games.findById(req.params.gameId);
+        
+        if (!game) {
+            return res.status(404).send('Game not found');
+        }
+        const commentIndex = game.comment.findIndex(comment => comment._id.toString() === req.params.commentId);
+        
+        if (commentIndex === -1) {
+            return res.status(404).send('Comment not found');
+        }
+        game.comment[commentIndex].comment = req.body.comment; 
+        await game.save();
 
-		// Respond with the newGameComment:
-		res.status(201).json(newGameComment)
-	} catch (error) {
-		res.status(500).json(error)
-	}
-})
+        res.status(200).json(game.comment[commentIndex]); 
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+router.delete('/:gameId/comments/:commentId', async (req, res) => {
+    try {
+        const game = await Games.findById(req.params.gameId);
+        
+        if (!game) {
+            return res.status(404).send('Game not found');
+        }
+
+        const commentIndex = game.comment.findIndex(comment => comment._id.toString() === req.params.commentId);
+        
+        if (commentIndex === -1) {
+            return res.status(404).send('Comment not found');
+        }
+
+        game.comment.splice(commentIndex, 1); 
+        await game.save();
+
+        res.status(204).send(); 
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
 
 
 module.exports = router
