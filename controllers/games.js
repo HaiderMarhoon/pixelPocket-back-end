@@ -18,8 +18,11 @@ router.get("/" , async(req,res) =>{
 
 router.get("/:gameId" , async(req,res)=>{
     try{
-        const games =await Games.findById(req.params.gameId)
-        res.status(200).json(games);
+        const game = await Games.findById(req.params.gameId).populate('author').populate({
+            path: 'comment.author',
+            model: 'User'
+        });
+        res.status(200).json(game);
     }catch(err){
         res.status(500).send(err)
     }
@@ -43,63 +46,60 @@ router.post('/', async(req,res)=>{
 
 router.put('/:gameId', async(req,res) =>{
     try{
-        const game = await Games.findById(req.params.gameId)
+        const game = await Games.findById(req.params.gameId);
 
-        if(!game.author.equals(req.user._id)){
-            res.status(404).send("You can not modify anythings")
+        if (!game) {
+            return res.status(404).send("Game not found");
         }
 
-        const updateGame = await Games.findByIdAndUpdate(
+        if (!game.author.equals(req.user._id)) {
+            return res.status(403).send("You cannot modify this game");
+        }
+
+        const updatedGame = await Games.findByIdAndUpdate(
             req.params.gameId,
             req.body,
-            { new: true}
-        )
+            { new: true }
+        );
 
-        updateGame._doc.author =req.user
-        res.status(201).json(updateGame)
+        updatedGame._doc.author = req.user;
+        res.status(200).json(updatedGame);
     }
     catch(err){
-        res.status(500).send(err)
+        res.status(500).send(err);
     }
-})
+});
 
+router.delete("/:gameId", async (req, res) => {
+    try {
+        const game = await Games.findById(req.params.gameId);
+        if (!game) {
+            return res.status(404).send("Game not found");
+        }
 
-router.delete("/:gameId" , async(req,res) =>{
-    try{
-        const game = await Games.findById(req.params.gameId)
-
-        if(!game.author.equals(req.user._id)){
-            res.status(404).send("You can not delete game")
+        if (!game.author.equals(req.user._id)) {
+            return res.status(403).send("You cannot delete this game");
         }
 
         const deleteGame = await Games.findByIdAndDelete(req.params.gameId)
-        res.status(201).json(deleteGame)
+        res.status(204).send(deleteGame); 
+    } catch (err) {
+        console.error("Error in delete route:", err); 
+        res.status(500).send('Internal Server Error');
     }
-    catch(err){
-        res.status(500).send(err)
-    }
-})
+});
 
 
 // comments
 router.post('/:gameId/comments', async (req, res) => {
 	try {
 		req.body.author = req.user._id
-<<<<<<< HEAD
-		const games = await Games.findById(req.params.hootId)
-		games.comments.push(req.body)
-		await games.save()
-
-		// Find the newly created comment:
-		const newGameComment = games.comments[games.comments.length - 1]
-=======
 		const games = await Games.findById(req.params.gameId)
 		games.comment.push(req.body)
 		await games.save()
 
 		// Find the newly created comment:
 		const newGameComment = games.comment[games.comment.length - 1]
->>>>>>> 0dc80f40e97db1a90001f0d2c8adabf83ec27b0f
 
 		newGameComment._doc.author = req.user
 

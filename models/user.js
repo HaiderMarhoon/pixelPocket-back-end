@@ -5,20 +5,29 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
+      unique: true,  
+      trim: true,   
+      minlength: 3   
     },
     email: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      match: [/.+\@.+\..+/, 'Please fill a valid email address']  
     },
     hashedPassword: {
       type: String,
       required: true,
+      minlength: 8  
     },
-    favorite:{
-      type: mongoose.Schema.Types.ObjectId , ref:'games'
+    favorites: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'games'  
     },
-    age:{
-      type : Number
+    age: {
+      type: Number,      
     }
   },
   {
