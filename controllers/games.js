@@ -81,7 +81,7 @@ router.delete("/:gameId", async (req, res) => {
             return res.status(403).send("You cannot delete this game");
         }
 
-        await game.findByIdAndDelete(req.params.gameId)
+        await Game.findByIdAndDelete(req.params.gameId)
         res.status(204).send(); 
     } catch (err) {
         console.error("Error in delete route:", err); 
