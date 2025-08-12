@@ -36,17 +36,19 @@ router.post('/sign-up', async (req, res) => {
   }
 });
 
-router.post('/sign-in', async (req, res, next) => {
+router.post('/sign-in', async (req, res) => {
   try {
-    const { identifier, password } = req.body; 
-    if (!identifier || !password) {
-      return res.status(400).json({ err: 'Identifier and password are required' });
+    let { usernameOrEmail, password } = req.body;
+    if (!usernameOrEmail || !password) {
+      return res.status(400).json({ err: 'usernameOrEmail and password are required' });
     }
+
+    usernameOrEmail = usernameOrEmail.trim().toLowerCase();
 
     const user = await User.findOne({
       $or: [
-        { username: identifier },
-        { email: identifier }
+        { username: usernameOrEmail },
+        { email: usernameOrEmail }
       ]
     });
 
@@ -54,9 +56,7 @@ router.post('/sign-in', async (req, res, next) => {
       return res.status(401).json({ err: 'Invalid credentials.' });
     }
 
-    // Check if the password is correct using bcrypt
-    const isPasswordCorrect = bcrypt.compareSync(req.body.password, user.hashedPassword);
-    // If the password is incorrect, return a 401 status code with a message
+    const isPasswordCorrect = bcrypt.compareSync(password, user.hashedPassword);
     if (!isPasswordCorrect) {
       return res.status(401).json({ err: 'Invalid credentials.' });
     }
@@ -68,7 +68,7 @@ router.post('/sign-in', async (req, res, next) => {
       age: user.age,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET);
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     res.status(201).json({ token });
   } catch (err) {
