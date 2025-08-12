@@ -43,38 +43,51 @@ router.get('/:userId/favorite', verifyToken, async (req, res) => {
     if (req.user._id !== req.params.userId) {
       return res.status(403).json({ err: 'Unauthorized' });
     }
-    const user = await User.findById(req.params.userId).populate('favorite');
+    const user = await User.findById(req.params.userId)
+      .populate('favorites');  // Changed from 'favorite' to 'favorites'
     if (!user) {
-      return res.status(405).json({ err: 'User not found.' });
+      return res.status(404).json({ err: 'User not found.' });
     }
-    res.json({ favorite: user.favorite });
+    res.json(user.favorites);  // Return just the favorites array
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
-  const user = await User.findById(req.params.userId).populate('favorites');
-  res.json({ favorite: user.favorite })
-})
+});
 
 
 
 // POST
-router.post('/:userId/favorite', verifyToken , async (req, res) => {
-  if(req.user._id !== req.params.userId) {
-    return res.status(403).json({ err: 'Unauthorized' })
+router.post('/:userId/favorite/:gameId', verifyToken, async (req, res) => {
+  try {
+    if (req.user._id !== req.params.userId) {
+      return res.status(403).json({ err: 'Unauthorized' });
+    }
+    const user = await User.findById(req.params.userId);
+    if (!user.favorites.includes(req.params.gameId)) {
+      user.favorites.push(req.params.gameId);
+      await user.save();
+    }
+    res.json(user.favorites);
+  } catch (err) {
+    res.status(500).json({ err: err.message });
   }
-  const user = await User.findById(req.params.userId);
-  if(!user.favorite.includes(req.params.gameId)){
-    user.favorite.push(req.params.gameId)
-    await user.save();
-  }
-})
+});
 
 // DELETE 
-router.delete('./:userId/favorite', verifyToken , async (req, res) => {
-  if(req.user._id !== req.params.userId){
-    return res.status(403).json({ err: 'Unauthorized '});
+router.delete('/:userId/favorite/:gameId', verifyToken, async (req, res) => {
+  try {
+    if (req.user._id !== req.params.userId) {
+      return res.status(403).json({ err: 'Unauthorized' });
+    }
+    const user = await User.findById(req.params.userId);
+    user.favorites = user.favorites.filter(
+      favId => favId.toString() !== req.params.gameId
+    );
+    await user.save();
+    res.json(user.favorites);
+  } catch (err) {
+    res.status(500).json({ err: err.message });
   }
-  const user = await User.findById(req.params.user)
-})
+});
 
 module.exports = router;
