@@ -81,8 +81,8 @@ router.delete("/:gameId", async (req, res) => {
             return res.status(403).send("You cannot delete this game");
         }
 
-        await Game.findByIdAndDelete(req.params.gameId)
-        res.status(204).send(); 
+        const deleteGame = await Games.findByIdAndDelete(req.params.gameId)
+        res.status(204).send(deleteGame); 
     } catch (err) {
         console.error("Error in delete route:", err); 
         res.status(500).send('Internal Server Error');
