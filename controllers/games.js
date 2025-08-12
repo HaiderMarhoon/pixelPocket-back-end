@@ -70,10 +70,9 @@ router.put('/:gameId', async(req,res) =>{
     }
 });
 
-router.delete("/:gameId" , async(req,res) =>{
-    try{
+router.delete("/:gameId", async (req, res) => {
+    try {
         const game = await Games.findById(req.params.gameId);
-
         if (!game) {
             return res.status(404).send("Game not found");
         }
@@ -82,11 +81,11 @@ router.delete("/:gameId" , async(req,res) =>{
             return res.status(403).send("You cannot delete this game");
         }
 
-        await game.remove(); // or use findByIdAndDelete
-        res.status(204).send(); // No content to send back
-    }
-    catch(err){
-        res.status(500).send(err);
+        await game.findByIdAndDelete(req.params.gameId)
+        res.status(204).send(); 
+    } catch (err) {
+        console.error("Error in delete route:", err); 
+        res.status(500).send('Internal Server Error');
     }
 });
 
