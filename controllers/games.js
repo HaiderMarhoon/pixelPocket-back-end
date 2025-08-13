@@ -114,21 +114,17 @@ router.delete('/:gameId/comments/:commentId', async (req, res) => {
   try {
     const { gameId, commentId } = req.params;
 
-    // Find the game
     const game = await Games.findById(gameId);
     if (!game) return res.status(404).json({ message: 'Game not found' });
 
-    // Find the index of the comment
-    const commentIndex = game.comment.findIndex(c => c._id.toString() === commentId);
-    if (commentIndex === -1) return res.status(404).json({ message: 'Comment not found' });
+    const commentdelete = game.comment.findIndex(c => c._id.toString() === commentId);
+    if (commentdelete === -1) return res.status(404).json({ message: 'Comment not found' });
 
-    // Optional: Only allow the author of the comment to delete it
-    if (game.comment[commentIndex].author.toString() !== req.user._id.toString()) {
+    if (game.comment[commentdelete].author.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Unauthorized to delete this comment' });
     }
 
-    // Remove the comment
-    game.comment.splice(commentIndex, 1);
+    game.comment.splice(commentdelete, 1);
     await game.save();
 
     res.status(200).json({ message: 'Comment deleted successfully' });
