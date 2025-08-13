@@ -65,9 +65,10 @@ router.post('/:userId/favorite/:gameId', verifyToken, async (req, res) => {
     const user = await User.findById(req.params.userId);
     if (!user.favorites.includes(req.params.gameId)) {
       user.favorites.push(req.params.gameId);
+      // console.log(user)
       await user.save();
     }
-    res.json(user.favorites);
+    res.json(user);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
