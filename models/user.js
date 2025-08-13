@@ -22,10 +22,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 8  
     },
-    favorites: {
+    favorites: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'games'  
-    },
+    }],
     age: {
       type: Number,      
     }
