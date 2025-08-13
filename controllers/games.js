@@ -121,7 +121,6 @@ router.post('/:gameId/ratings', async (req, res) => {
         const game = await Games.findById(req.params.gameId);
         if (!game) return res.status(404).json({ error: 'Game not found' });
 
-        // Check if the user already rated
         const existingRating = game.ratings.find(r => r.user.toString() === user);
         if (existingRating) {
             existingRating.value = value; 
@@ -130,8 +129,13 @@ router.post('/:gameId/ratings', async (req, res) => {
         }
 
         await game.save();
+        
+ 
         const avg = game.ratings.reduce((acc, r) => acc + r.value, 0) / game.ratings.length;
-        res.status(201).json({ average: avg }); 
+
+        const populatedRatings = await Games.findById(game._id).populate('ratings.user', 'username');
+
+        res.status(201).json({ average: avg, ratings: populatedRatings.ratings });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to add rating' });
@@ -147,7 +151,11 @@ router.get('/:gameId/ratings', async (req, res) => {
         if (!game || !Array.isArray(game.ratings) || game.ratings.length === 0) {
             return res.json(0); // Return 0 if no ratings
         }
-        const average = game.ratings.reduce((acc, r) => acc + (r.value || 0), 0) / game.ratings.length;
+
+        const sum = game.ratings.reduce((acc, r) => acc + (r.value || 0), 0)
+        const average = sum / game.ratings.length;
+
+        console.log('dum', sum, 'average', average)
         res.json(Number(average.toFixed(1))); // Return average rating
     } catch (error) {
         console.error(error);

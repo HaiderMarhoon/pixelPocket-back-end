@@ -44,11 +44,11 @@ router.get('/:userId/favorite', verifyToken, async (req, res) => {
       return res.status(403).json({ err: 'Unauthorized' });
     }
     const user = await User.findById(req.params.userId)
-      .populate('favorites');  // Changed from 'favorite' to 'favorites'
+      .populate('favorites');  
     if (!user) {
       return res.status(404).json({ err: 'User not found.' });
     }
-    res.json(user.favorites);  // Return just the favorites array
+    res.json({ favorites: user.favorites }); 
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
@@ -65,10 +65,9 @@ router.post('/:userId/favorite/:gameId', verifyToken, async (req, res) => {
     const user = await User.findById(req.params.userId);
     if (!user.favorites.includes(req.params.gameId)) {
       user.favorites.push(req.params.gameId);
-      // console.log(user)
       await user.save();
     }
-    res.json(user);
+    res.json({ favorites: user.favorites });
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
@@ -85,7 +84,7 @@ router.delete('/:userId/favorite/:gameId', verifyToken, async (req, res) => {
       favId => favId.toString() !== req.params.gameId
     );
     await user.save();
-    res.json(user.favorites);
+    res.json({ favorites: user.favorites });
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
