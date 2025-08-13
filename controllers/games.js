@@ -98,12 +98,10 @@ router.post('/:gameId/comments', async (req, res) => {
 		games.comment.push(req.body)
 		await games.save()
 
-		// Find the newly created comment:
 		const newGameComment = games.comment[games.comment.length - 1]
 
 		newGameComment._doc.author = req.user
 
-		// Respond with the newGameComment:
 		res.status(201).json(newGameComment)
 	} catch (error) {
 		res.status(500).json(error)
