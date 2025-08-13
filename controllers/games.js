@@ -155,5 +155,51 @@ router.delete('/:gameId/comments/:commentId', async (req, res) => {
     }
 });
 
+router.post('/:gameId/ratings', async (req, res) => {
+    try {
+        const { user, value } = req.body;
+
+        if (!value || value < 1 || value > 5) {
+            return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+        }
+
+        const game = await Games.findById(req.params.gameId);
+        if (!game) return res.status(404).json({ error: 'Game not found' });
+
+        // Check if the user already rated
+        const existingRating = game.ratings.find(r => r.user.toString() === user);
+        if (existingRating) {
+            existingRating.value = value; 
+        } else {
+            game.ratings.push({ user, value }); 
+        }
+
+        await game.save();
+        const avg = game.ratings.reduce((acc, r) => acc + r.value, 0) / game.ratings.length;
+        res.status(201).json({ average: avg }); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to add rating' });
+    }
+});
+
+
+
+// Get average rating
+router.get('/:gameId/ratings', async (req, res) => {
+    try {
+        const game = await Games.findById(req.params.gameId);
+        if (!game || !Array.isArray(game.ratings) || game.ratings.length === 0) {
+            return res.json(0); // Return 0 if no ratings
+        }
+        const average = game.ratings.reduce((acc, r) => acc + (r.value || 0), 0) / game.ratings.length;
+        res.json(Number(average.toFixed(1))); // Return average rating
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch average rating' });
+    }
+});
+
+
 
 module.exports = router

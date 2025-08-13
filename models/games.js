@@ -41,7 +41,11 @@ const gamesSchema = mongoose.Schema({
         type: String,
         required : true
     },
-    comment:[commentsSchema]
+    comment:[commentsSchema],
+    ratings: [{ 
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
+        value: { type: Number, min: 1, max: 5 }
+     }]
 },{
     timestamp:true
 })
