@@ -110,58 +110,58 @@ router.post('/:gameId/comments', async (req, res) => {
 	}
 })
 
-router.post('/:gameId/ratings', async (req, res) => {
+router.delete('/:gameId/comments/:commentId', async (req, res) => {
+  try {
+    const { gameId, commentId } = req.params;
+
+    // Find the game
+    const game = await Games.findById(gameId);
+    if (!game) return res.status(404).json({ message: 'Game not found' });
+
+    // Find the index of the comment
+    const commentIndex = game.comment.findIndex(c => c._id.toString() === commentId);
+    if (commentIndex === -1) return res.status(404).json({ message: 'Comment not found' });
+
+    // Optional: Only allow the author of the comment to delete it
+    if (game.comment[commentIndex].author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized to delete this comment' });
+    }
+
+    // Remove the comment
+    game.comment.splice(commentIndex, 1);
+    await game.save();
+
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
+});
+
+router.put('/:gameId/comments/:commentId', async (req, res) => {
     try {
-        const { user, value } = req.body;
+        const { gameId, commentId } = req.params;
+        const { comment } = req.body; 
+        const game = await Games.findById(gameId);
 
-        if (!value || value < 1 || value > 5) {
-            return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+        if (!game) return res.status(404).json({ message: 'Game not exist' });
+
+        const commentBox = game.comment.id(commentId);
+        if (!commentBox) return res.status(404).json({ message: 'Comment not exist' });
+
+        if (commentBox.author.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Unauthorized error' });
         }
 
-        const game = await Games.findById(req.params.gameId);
-        if (!game) return res.status(404).json({ error: 'Game not found' });
-
-        const existingRating = game.ratings.find(r => r.user.toString() === user);
-        if (existingRating) {
-            existingRating.value = value; 
-        } else {
-            game.ratings.push({ user, value }); 
-        }
-
+        commentBox.comment = comment; 
         await game.save();
-        
- 
-        const avg = game.ratings.reduce((acc, r) => acc + r.value, 0) / game.ratings.length;
 
-        const populatedRatings = await Games.findById(game._id).populate('ratings.user', 'username');
-
-        res.status(201).json({ average: avg, ratings: populatedRatings.ratings });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to add rating' });
+        res.status(200).json(commentBox);
+    } catch (err) {
+        res.status(500).json(err);
     }
 });
 
-
-
-// Get average rating
-router.get('/:gameId/ratings', async (req, res) => {
-    try {
-        const game = await Games.findById(req.params.gameId);
-        if (!game || !Array.isArray(game.ratings) || game.ratings.length === 0) {
-            return res.json(0); // Return 0 if no ratings
-        }
-
-        const sum = game.ratings.reduce((acc, r) => acc + (r.value || 0), 0)
-        const average = sum / game.ratings.length;
-
-        console.log('dum', sum, 'average', average)
-        res.json(Number(average.toFixed(1))); // Return average rating
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch average rating' });
-    }
-});
 
 
 
