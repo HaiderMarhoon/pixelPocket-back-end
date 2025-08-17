@@ -39,6 +39,6 @@ app.use(verifyToken);
 app.use('/users', userRouter);
 app.use('/games', games)
 
-app.listen(3000, () => {
+app.listen(process.env.PORT, () => {
   console.log('The express app is ready!');
 });
